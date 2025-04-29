@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MapMemoryApp());
@@ -12,11 +12,8 @@ class MapMemoryApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Map Memory',
-      theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.deepPurple,
-        scaffoldBackgroundColor: Colors.black,
-      ),
-      home: const HomeScreen(),
+      theme: ThemeData.dark(),
+      home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
