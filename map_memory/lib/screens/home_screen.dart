@@ -16,14 +16,14 @@ class HomeScreen extends StatelessWidget {
         title: 'Premier baiser',
         description: 'Un moment magique ❤️',
         date: DateTime(2025, 2, 18, 16, 49),
-        imagePath: 'assets/kiss.jpg',
+        imagePath: 'assets/mouth.png',
         location: const LatLng(32.015, 34.775),
       ),
       Memory(
         title: 'Shopping au centre',
         description: 'On s\'est bien marrés 😂',
         date: DateTime(2025, 4, 29, 13, 30),
-        imagePath: 'assets/mall.jpg',
+        imagePath: 'assets/bulding.png',
         location: const LatLng(31.965, 34.771),
       ),
     ];
