@@ -23,7 +23,7 @@ Map Memory is a full-stack mobile app that lets couples or close friends save th
 cd map_memory_api
 npm install
 npm run dev
-```bash
+```
 
 The backend API will run on: http://localhost:5000/api
 
@@ -36,7 +36,7 @@ The backend API will run on: http://localhost:5000/api
 cd map_memory
 flutter pub get
 flutter run
-```bash
+```
 
 Make sure the backend is already running before launching the app.
 
