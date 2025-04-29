@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'enter_code_screen.dart';
+import '../services/api_service.dart'; // ajouter au début
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,16 +13,24 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _loginWithEmail() {
-    // TODO: Envoyer au backend (simulé pour l’instant)
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const EnterCodeScreen()),
-    );
+  void _loginWithEmail() async {
+    final success =
+        await ApiService.login(_emailController.text, _passwordController.text);
+    if (success) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const EnterCodeScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login failed')),
+      );
+    }
   }
 
   void _loginWithGoogle() {
-    // TODO: Connexion Google
+    // TODO: Integrate real Google Sign-In
+    // For now, simulate a login and navigate directly
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const EnterCodeScreen()),
@@ -37,7 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Map Memory", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+              const Text("Map Memory",
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
               const SizedBox(height: 30),
               TextField(
                 controller: _emailController,

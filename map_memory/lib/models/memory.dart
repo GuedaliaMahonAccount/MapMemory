@@ -4,7 +4,7 @@ class Memory {
   final String title;
   final String description;
   final DateTime date;
-  final String imagePath; // Pour simplifier : local path ou URL
+  final String imagePath;
   final LatLng location;
 
   Memory({
@@ -14,4 +14,14 @@ class Memory {
     required this.imagePath,
     required this.location,
   });
+
+  factory Memory.fromJson(Map<String, dynamic> json) {
+    return Memory(
+      title: json['title'],
+      description: json['description'] ?? '',
+      date: DateTime.parse(json['date']),
+      imagePath: json['photos'].isNotEmpty ? json['photos'][0] : '',
+      location: LatLng(json['location']['lat'], json['location']['lng']),
+    );
+  }
 }

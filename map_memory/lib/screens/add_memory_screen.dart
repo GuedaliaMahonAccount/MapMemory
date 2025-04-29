@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import '../services/api_service.dart'; // ajouter au début
 
 class AddMemoryScreen extends StatefulWidget {
   const AddMemoryScreen({super.key});
@@ -64,7 +65,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
     });
   }
 
-  void _submitMemory() {
+  void _submitMemory() async {
     if (_titleController.text.isEmpty ||
         _selectedDateTime == null ||
         _imageFile == null ||
@@ -75,14 +76,25 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       return;
     }
 
-    // TODO: Envoyer vers l’API ou provider
+    final memory = {
+      'title': _titleController.text,
+      'description': _descController.text,
+      'photos': [], // handle photo upload later
+      'date': _selectedDateTime!.toIso8601String(),
+      'location': {
+        'lat': _selectedLocation!.latitude,
+        'lng': _selectedLocation!.longitude,
+      }
+    };
 
-    print("Titre: ${_titleController.text}");
-    print("Date: $_selectedDateTime");
-    print("Location: $_selectedLocation");
-    print("Image: ${_imageFile!.path}");
-
-    Navigator.pop(context);
+    final success = await ApiService.addMemory(memory);
+    if (success) {
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to save memory')),
+      );
+    }
   }
 
   @override
@@ -114,7 +126,8 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 const SizedBox(width: 10),
                 Text(
                   _selectedDateTime != null
-                      ? DateFormat('dd/MM/yyyy HH:mm').format(_selectedDateTime!)
+                      ? DateFormat('dd/MM/yyyy HH:mm')
+                          .format(_selectedDateTime!)
                       : 'No date selected',
                 ),
               ],
