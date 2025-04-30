@@ -3,7 +3,7 @@ import '../models/memory.dart';
 import '../services/api_service.dart';
 import '../widgets/memory_card.dart';
 import 'add_memory_screen.dart';
-import 'map_screen.dart';
+import 'edit_memory_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,9 +22,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadMemories() async {
-    final memoriesData = await ApiService.getMemories();
+    final list = await ApiService.getMemories();
     setState(() {
-      _memories = memoriesData.map<Memory>((json) => Memory.fromJson(json)).toList();
+      _memories = list.map<Memory>((json) => Memory.fromJson(json)).toList();
     });
   }
 
@@ -35,32 +35,50 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _memories.isEmpty
           ? const Center(child: Text('No memories yet'))
           : ListView.builder(
-              itemCount: _memories.length,
               padding: const EdgeInsets.all(16),
-              itemBuilder: (context, index) {
-                return MemoryCard(memory: _memories[index]);
+              itemCount: _memories.length,
+              itemBuilder: (context, i) {
+                final mem = _memories[i];
+                return MemoryCard(
+                  memory: mem,
+                  onTap: () async {
+                    final updated = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EditMemoryScreen(memory: mem),
+                      ),
+                    );
+                    if (updated == true) _loadMemories();
+                  },
+                  onDelete: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Delete memory?'),
+                        content: const Text('Are you sure you want to delete this memory?'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                          TextButton(onPressed: () => Navigator.pop(context, true),  child: const Text('Delete')),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      await ApiService.deleteMemory(mem.id);
+                      _loadMemories();
+                    }
+                  },
+                );
               },
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(
+          final created = await Navigator.push<bool>(
             context,
             MaterialPageRoute(builder: (_) => const AddMemoryScreen()),
           );
-          _loadMemories(); // Reload memories after adding one
+          if (created == true) _loadMemories();
         },
         child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: IconButton(
-          icon: const Icon(Icons.map),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => MapScreen(memories: _memories)),
-            );
-          },
-        ),
       ),
     );
   }

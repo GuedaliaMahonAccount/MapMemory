@@ -71,10 +71,13 @@ class ApiService {
     final token = await getToken();
     final response = await http.get(
       Uri.parse('$baseUrl/memories'),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
     );
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return jsonDecode(response.body) as List<dynamic>;
     } else {
       return [];
     }
@@ -92,5 +95,32 @@ class ApiService {
       body: jsonEncode(memory),
     );
     return response.statusCode == 201;
+  }
+
+  // Update a memory
+  static Future<bool> updateMemory(
+      String id, Map<String, dynamic> memory) async {
+    final token = await getToken();
+    final response = await http.put(
+      Uri.parse('$baseUrl/memories/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(memory),
+    );
+    return response.statusCode == 200;
+  }
+
+  // Delete a memory
+  static Future<bool> deleteMemory(String id) async {
+    final token = await getToken();
+    final response = await http.delete(
+      Uri.parse('$baseUrl/memories/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    return response.statusCode == 200;
   }
 }

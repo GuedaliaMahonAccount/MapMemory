@@ -5,10 +5,17 @@ import '../models/memory.dart';
 
 class MemoryCard extends StatelessWidget {
   final Memory memory;
-  const MemoryCard({super.key, required this.memory});
+  final VoidCallback? onTap;
+  final VoidCallback? onDelete;
+
+  const MemoryCard({
+    Key? key,
+    required this.memory,
+    this.onTap,
+    this.onDelete,
+  }) : super(key: key);
 
   Widget buildPhoto() {
-    // Si imagePath non vide ET fichier existant
     if (memory.imagePath.isNotEmpty && File(memory.imagePath).existsSync()) {
       return Image.file(
         File(memory.imagePath),
@@ -17,7 +24,6 @@ class MemoryCard extends StatelessWidget {
         fit: BoxFit.cover,
       );
     }
-    // Sinon placeholder
     return const SizedBox(
       width: 60,
       height: 60,
@@ -31,12 +37,26 @@ class MemoryCard extends StatelessWidget {
       color: Colors.grey[900],
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        leading: buildPhoto(),  // <-- ici
-        title: Text(memory.title,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle:
-            Text(DateFormat('dd MMM yyyy – HH:mm').format(memory.date)),
-        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+        leading: buildPhoto(),
+        title: Text(
+          memory.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          DateFormat('dd MMM yyyy – HH:mm').format(memory.date),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (onDelete != null)
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: onDelete,
+              ),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
       ),
     );
   }

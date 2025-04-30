@@ -13,7 +13,6 @@ exports.createMemory = async (req, res) => {
     const userIds = [userId];
     if (user.partnerId) userIds.push(user.partnerId);
 
-    // Construction dynamique de l'objet
     const newMemory = {
       userIds,
       title,
@@ -21,7 +20,7 @@ exports.createMemory = async (req, res) => {
       photos: Array.isArray(photos) ? photos : [],
       date: date ? new Date(date) : new Date(),
     };
-    if (location && location.lat && location.lng) {
+    if (location && location.lat != null && location.lng != null) {
       newMemory.location = location;
     }
 
@@ -37,8 +36,54 @@ exports.getMemories = async (req, res) => {
   try {
     const userId = req.user.userId;
     const memories = await Memory.find({ userIds: userId }).sort({ date: -1 });
-
     res.status(200).json(memories);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update an existing memory
+exports.updateMemory = async (req, res) => {
+  try {
+    const memoryId = req.params.id;
+    const userId = req.user.userId;
+
+    const memory = await Memory.findById(memoryId);
+    if (!memory) return res.status(404).json({ message: 'Memory not found' });
+    if (!memory.userIds.includes(userId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const { title, description, photos, date, location } = req.body;
+    if (title !== undefined)      memory.title = title;
+    if (description !== undefined)memory.description = description;
+    if (photos !== undefined)     memory.photos = Array.isArray(photos) ? photos : [];
+    if (date !== undefined)       memory.date = new Date(date);
+    if (location && location.lat != null && location.lng != null) {
+      memory.location = location;
+    }
+
+    const updated = await memory.save();
+    res.status(200).json(updated);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete a memory
+exports.deleteMemory = async (req, res) => {
+  try {
+    const memoryId = req.params.id;
+    const userId = req.user.userId;
+
+    const memory = await Memory.findById(memoryId);
+    if (!memory) return res.status(404).json({ message: 'Memory not found' });
+    if (!memory.userIds.includes(userId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    await Memory.findByIdAndDelete(memoryId);
+    res.status(200).json({ message: 'Memory deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
