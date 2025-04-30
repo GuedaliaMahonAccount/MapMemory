@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import '../services/api_service.dart'; // ajouter au début
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_service.dart';
+import 'home_screen.dart';
 
 class EnterCodeScreen extends StatefulWidget {
-  const EnterCodeScreen({super.key});
+  const EnterCodeScreen({Key? key}) : super(key: key);
 
   @override
   State<EnterCodeScreen> createState() => _EnterCodeScreenState();
@@ -13,7 +14,7 @@ class EnterCodeScreen extends StatefulWidget {
 class _EnterCodeScreenState extends State<EnterCodeScreen> {
   final _codeController = TextEditingController();
 
-  void _submitCode() async {
+  Future<void> _submitCode() async {
     final success = await ApiService.connectWithPartner(_codeController.text);
     if (success) {
       Navigator.pushReplacement(
@@ -22,21 +23,24 @@ class _EnterCodeScreenState extends State<EnterCodeScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid code')),
+        const SnackBar(content: Text('Code invalide')),
       );
     }
   }
 
-  void _generateNewCode() async {
-    // Get the shared code saved during login
+  Future<void> _generateNewCode() async {
     final prefs = await SharedPreferences.getInstance();
-    final sharedCode = prefs.getString('sharedCode') ?? 'No code found';
+    final sharedCode = prefs.getString('sharedCode') ?? '';
 
-    showDialog(
+    // Copie automatique dans le presse-papier
+    await Clipboard.setData(ClipboardData(text: sharedCode));
+
+    // Affiche le code avec bouton OK
+    await showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Your sharing code"),
-        content: Text("Share this code with your partner: $sharedCode"),
+        title: const Text("Votre code de partage"),
+        content: Text("Code copié : $sharedCode"),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -44,6 +48,12 @@ class _EnterCodeScreenState extends State<EnterCodeScreen> {
           ),
         ],
       ),
+    );
+
+    // Puis entrée directe dans l’app
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
     );
   }
 
@@ -55,12 +65,12 @@ class _EnterCodeScreenState extends State<EnterCodeScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const Text(
-                "Tu veux rejoindre ton/ta partenaire ? Entre son code :"),
+            const Text("Rejoindre un partenaire :"),
             const SizedBox(height: 10),
             TextField(
               controller: _codeController,
-              decoration: const InputDecoration(labelText: "Code de partage"),
+              decoration:
+                  const InputDecoration(labelText: "Code de partage"),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -68,10 +78,10 @@ class _EnterCodeScreenState extends State<EnterCodeScreen> {
               child: const Text("Rejoindre"),
             ),
             const Divider(height: 40),
-            const Text("Tu veux créer un nouveau code ?"),
+            const Text("Créer votre propre code :"),
             ElevatedButton(
               onPressed: _generateNewCode,
-              child: const Text("Générer un nouveau code"),
+              child: const Text("Générer et entrer"),
             ),
           ],
         ),

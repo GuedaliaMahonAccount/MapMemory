@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import '../services/api_service.dart'; // ajouter au début
+import '../services/api_service.dart';
 
 class AddMemoryScreen extends StatefulWidget {
-  const AddMemoryScreen({super.key});
+  const AddMemoryScreen({Key? key}) : super(key: key);
 
   @override
   State<AddMemoryScreen> createState() => _AddMemoryScreenState();
@@ -20,14 +20,13 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
   LatLng? _selectedLocation;
 
   final ImagePicker _picker = ImagePicker();
+  // ignore: unused_field
   GoogleMapController? _mapController;
 
   Future<void> _pickImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      setState(() {
-        _imageFile = File(picked.path);
-      });
+      setState(() => _imageFile = File(picked.path));
     }
   }
 
@@ -38,14 +37,11 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
-
     if (date == null) return;
-
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
-
     if (time != null) {
       setState(() {
         _selectedDateTime = DateTime(
@@ -60,31 +56,33 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
   }
 
   void _onMapTap(LatLng position) {
-    setState(() {
-      _selectedLocation = position;
-    });
+    setState(() => _selectedLocation = position);
   }
 
-  void _submitMemory() async {
-    if (_titleController.text.isEmpty ||
-        _selectedDateTime == null ||
-        _imageFile == null ||
-        _selectedLocation == null) {
+  Future<void> _submitMemory() async {
+    // 1 seul champ obligatoire : le titre
+    if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
+        const SnackBar(content: Text('Le titre est requis')),
       );
       return;
     }
 
-    final memory = {
+    // Valeurs par défaut
+    final date = _selectedDateTime ?? DateTime.now();
+
+    // Construction dynamique de l’objet à envoyer
+    final memory = <String, dynamic>{
       'title': _titleController.text,
       'description': _descController.text,
-      'photos': [], // handle photo upload later
-      'date': _selectedDateTime!.toIso8601String(),
-      'location': {
-        'lat': _selectedLocation!.latitude,
-        'lng': _selectedLocation!.longitude,
-      }
+      'date': date.toIso8601String(),
+      if (_imageFile != null)
+        'photos': [_imageFile!.path], // photo peuplée seulement si existante
+      if (_selectedLocation != null)
+        'location': {
+          'lat': _selectedLocation!.latitude,
+          'lng': _selectedLocation!.longitude,
+        },
     };
 
     final success = await ApiService.addMemory(memory);
@@ -92,7 +90,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save memory')),
+        const SnackBar(content: Text('Échec lors de la sauvegarde')),
       );
     }
   }
@@ -128,7 +126,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                   _selectedDateTime != null
                       ? DateFormat('dd/MM/yyyy HH:mm')
                           .format(_selectedDateTime!)
-                      : 'No date selected',
+                      : 'Date par défaut',
                 ),
               ],
             ),
@@ -143,14 +141,14 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 const SizedBox(width: 10),
                 _imageFile != null
                     ? Image.file(_imageFile!, width: 80, height: 80)
-                    : const Text("No image"),
+                    : const Text("Pas d’image"),
               ],
             ),
             const SizedBox(height: 10),
             SizedBox(
               height: 200,
               child: GoogleMap(
-                onMapCreated: (controller) => _mapController = controller,
+                onMapCreated: (c) => _mapController = c,
                 initialCameraPosition: const CameraPosition(
                   target: LatLng(32.0853, 34.7818), // Tel Aviv
                   zoom: 10,
@@ -159,7 +157,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 markers: _selectedLocation != null
                     ? {
                         Marker(
-                          markerId: const MarkerId("selected"),
+                          markerId: const MarkerId("sel"),
                           position: _selectedLocation!,
                         )
                       }
@@ -168,14 +166,14 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: _submitMemory,
               icon: const Icon(Icons.check),
               label: const Text("Save Memory"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 minimumSize: const Size(double.infinity, 50),
               ),
-            )
+              onPressed: _submitMemory,
+            ),
           ],
         ),
       ),

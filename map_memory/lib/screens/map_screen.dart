@@ -12,7 +12,7 @@ class MapScreen extends StatelessWidget {
     Set<Marker> markers = memories.map((memory) {
       return Marker(
         markerId: MarkerId(memory.title),
-        position: memory.location,
+        position: memory.location ?? const LatLng(32.0, 34.8),
         infoWindow: InfoWindow(
           title: memory.title,
           snippet: memory.description,
@@ -24,7 +24,7 @@ class MapScreen extends StatelessWidget {
       appBar: AppBar(title: const Text("Map Memories")),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
-          target: memories.isNotEmpty ? memories[0].location : const LatLng(32.0, 34.8),
+          target: memories.isNotEmpty ? (memories[0].location ?? const LatLng(32.0, 34.8)) : const LatLng(32.0, 34.8),
           zoom: 10,
         ),
         markers: markers,
