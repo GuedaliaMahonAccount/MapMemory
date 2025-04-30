@@ -20,6 +20,8 @@ class ApiService {
       body: jsonEncode({'email': email, 'password': password}),
     );
 
+    print('Register response: ${response.statusCode} - ${response.body}');
+
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       final prefs = await SharedPreferences.getInstance();
