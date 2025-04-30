@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 import 'enter_code_screen.dart';
-import '../services/api_service.dart'; // ajouter au début
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,10 +12,19 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool isLogin = true;
 
-  void _loginWithEmail() async {
-    final success =
-        await ApiService.login(_emailController.text, _passwordController.text);
+  Future<void> _submit() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    bool success = false;
+    if (isLogin) {
+      success = await ApiService.login(email, password);
+    } else {
+      success = await ApiService.register(email, password);
+    }
+
     if (success) {
       Navigator.pushReplacement(
         context,
@@ -23,14 +32,19 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login failed')),
+        const SnackBar(content: Text('Authentication failed')),
       );
     }
   }
 
+  void _toggleMode() {
+    setState(() {
+      isLogin = !isLogin;
+    });
+  }
+
   void _loginWithGoogle() {
     // TODO: Integrate real Google Sign-In
-    // For now, simulate a login and navigate directly
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const EnterCodeScreen()),
@@ -46,8 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Map Memory",
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+              Text("Map Memory", style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: 30),
               TextField(
                 controller: _emailController,
@@ -60,10 +73,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: const InputDecoration(labelText: "Password"),
               ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _loginWithEmail,
-                icon: const Icon(Icons.email),
-                label: const Text("Continue with Email"),
+              ElevatedButton(
+                onPressed: _submit,
+                child: Text(isLogin ? "Login" : "Register"),
+              ),
+              TextButton(
+                onPressed: _toggleMode,
+                child: Text(isLogin ? "No account? Register here" : "Already have an account? Login"),
               ),
               const SizedBox(height: 10),
               ElevatedButton.icon(
