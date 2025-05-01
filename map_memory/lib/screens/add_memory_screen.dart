@@ -115,7 +115,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 Text(
                   _selectedDateTime != null
                       ? DateFormat('dd/MM/yyyy HH:mm').format(_selectedDateTime!)
-                      : 'Date par défaut',
+                      : 'Default Date',
                 ),
               ],
             ),
@@ -130,7 +130,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 const SizedBox(width: 10),
                 _imageFile != null
                     ? Image.file(_imageFile!, width: 80, height: 80)
-                    : const Text("Pas d’image"),
+                    : const Text("No Image"),
               ],
             ),
             const SizedBox(height: 10),
@@ -145,7 +145,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 _selectedLocation != null
                     ? Text(
                         '${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}')
-                    : const Text("Aucune"),
+                    : const Text("No Location"),
               ],
             ),
             const SizedBox(height: 20),

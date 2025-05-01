@@ -62,7 +62,7 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sélectionnez la position')),
+      appBar: AppBar(title: const Text('Select Location')),
       body: Column(
         children: [
           Padding(
@@ -70,7 +70,7 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Rechercher une adresse',
+                hintText: 'Search address',
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.search),
                   onPressed: _onSearch,

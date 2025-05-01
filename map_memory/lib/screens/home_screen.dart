@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Our Journal')),
+      appBar: AppBar(title: const Text('Map Memory')),
       body: _memories.isEmpty
           ? const Center(child: Text('No memories yet'))
           : ListView.builder(
