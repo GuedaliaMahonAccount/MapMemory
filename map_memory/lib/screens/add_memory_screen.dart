@@ -1,15 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/api_service.dart';
+import 'map_selection_screen.dart';
 
 class AddMemoryScreen extends StatefulWidget {
   const AddMemoryScreen({Key? key}) : super(key: key);
 
   @override
-  State<AddMemoryScreen> createState() => _AddMemoryScreenState();
+  _AddMemoryScreenState createState() => _AddMemoryScreenState();
 }
 
 class _AddMemoryScreenState extends State<AddMemoryScreen> {
@@ -19,12 +20,8 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
   DateTime? _selectedDateTime;
   LatLng? _selectedLocation;
 
-  final ImagePicker _picker = ImagePicker();
-  // ignore: unused_field
-  GoogleMapController? _mapController;
-
   Future<void> _pickImage() async {
-    final picked = await _picker.pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
       setState(() => _imageFile = File(picked.path));
     }
@@ -45,54 +42,47 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
     if (time != null) {
       setState(() {
         _selectedDateTime = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          time.hour,
-          time.minute,
-        );
+          date.year, date.month, date.day, time.hour, time.minute);
       });
     }
   }
 
-  void _onMapTap(LatLng position) {
-    setState(() => _selectedLocation = position);
+  Future<void> _selectLocation() async {
+    final loc = await Navigator.push<LatLng?>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapSelectionScreen(
+          initialLocation: _selectedLocation,
+        ),
+      ),
+    );
+    if (loc != null) setState(() => _selectedLocation = loc);
   }
 
   Future<void> _submitMemory() async {
-    // 1 seul champ obligatoire : le titre
     if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Le titre est requis')),
       );
       return;
     }
-
-    // Valeurs par défaut
     final date = _selectedDateTime ?? DateTime.now();
-
-    // Construction dynamique de l’objet à envoyer
     final memory = <String, dynamic>{
       'title': _titleController.text,
       'description': _descController.text,
       'date': date.toIso8601String(),
-      if (_imageFile != null)
-        'photos': [_imageFile!.path], // photo peuplée seulement si existante
+      if (_imageFile != null) 'photos': [_imageFile!.path],
       if (_selectedLocation != null)
         'location': {
           'lat': _selectedLocation!.latitude,
           'lng': _selectedLocation!.longitude,
         },
     };
-
     final success = await ApiService.addMemory(memory);
-    if (success) {
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Échec lors de la sauvegarde')),
-      );
-    }
+    if (success) Navigator.pop(context);
+    else ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Échec lors de la sauvegarde')),
+    );
   }
 
   @override
@@ -124,8 +114,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 const SizedBox(width: 10),
                 Text(
                   _selectedDateTime != null
-                      ? DateFormat('dd/MM/yyyy HH:mm')
-                          .format(_selectedDateTime!)
+                      ? DateFormat('dd/MM/yyyy HH:mm').format(_selectedDateTime!)
                       : 'Date par défaut',
                 ),
               ],
@@ -145,24 +134,19 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            SizedBox(
-              height: 200,
-              child: GoogleMap(
-                onMapCreated: (c) => _mapController = c,
-                initialCameraPosition: const CameraPosition(
-                  target: LatLng(32.0853, 34.7818), // Tel Aviv
-                  zoom: 10,
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.map),
+                  label: const Text("Localisation"),
+                  onPressed: _selectLocation,
                 ),
-                onTap: _onMapTap,
-                markers: _selectedLocation != null
-                    ? {
-                        Marker(
-                          markerId: const MarkerId("sel"),
-                          position: _selectedLocation!,
-                        )
-                      }
-                    : {},
-              ),
+                const SizedBox(width: 10),
+                _selectedLocation != null
+                    ? Text(
+                        '${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}')
+                    : const Text("Aucune"),
+              ],
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(

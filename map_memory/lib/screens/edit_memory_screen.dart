@@ -1,17 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/memory.dart';
 import '../services/api_service.dart';
+import 'map_selection_screen.dart';
 
 class EditMemoryScreen extends StatefulWidget {
   final Memory memory;
   const EditMemoryScreen({Key? key, required this.memory}) : super(key: key);
 
   @override
-  State<EditMemoryScreen> createState() => _EditMemoryScreenState();
+  _EditMemoryScreenState createState() => _EditMemoryScreenState();
 }
 
 class _EditMemoryScreenState extends State<EditMemoryScreen> {
@@ -20,7 +21,6 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
   File? _imageFile;
   DateTime _selectedDateTime = DateTime.now();
   LatLng? _selectedLocation;
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
   }
 
   Future<void> _pickImage() async {
-    final picked = await _picker.pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) setState(() => _imageFile = File(picked.path));
   }
 
@@ -54,17 +54,22 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
     if (time != null) {
       setState(() {
         _selectedDateTime = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          time.hour,
-          time.minute,
-        );
+          date.year, date.month, date.day, time.hour, time.minute);
       });
     }
   }
 
-  void _onMapTap(LatLng pos) => setState(() => _selectedLocation = pos);
+  Future<void> _selectLocation() async {
+    final loc = await Navigator.push<LatLng?>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapSelectionScreen(
+          initialLocation: _selectedLocation,
+        ),
+      ),
+    );
+    if (loc != null) setState(() => _selectedLocation = loc);
+  }
 
   Future<void> _submit() async {
     if (_titleController.text.isEmpty) {
@@ -84,10 +89,10 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
           'lng': _selectedLocation!.longitude,
         },
     };
-    final success = await ApiService.updateMemory(widget.memory.id, payload);
-    if (success) {
-      Navigator.pop(context, true);
-    } else {
+    final success =
+        await ApiService.updateMemory(widget.memory.id, payload);
+    if (success) Navigator.pop(context, true);
+    else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Update failed')),
       );
@@ -101,8 +106,12 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
         title: const Text('Delete memory?'),
         content: const Text('This action cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true),  child: const Text('Delete')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete')),
         ],
       ),
     );
@@ -144,7 +153,8 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
                   onPressed: _selectDateTime,
                 ),
                 const SizedBox(width: 10),
-                Text(DateFormat('dd/MM/yyyy HH:mm').format(_selectedDateTime)),
+                Text(DateFormat('dd/MM/yyyy HH:mm')
+                    .format(_selectedDateTime)),
               ],
             ),
             const SizedBox(height: 10),
@@ -162,24 +172,19 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            SizedBox(
-              height: 200,
-              child: GoogleMap(
-                onMapCreated: (_) {},
-                initialCameraPosition: CameraPosition(
-                  target: _selectedLocation ?? const LatLng(32.0853, 34.7818),
-                  zoom: 10,
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.map),
+                  label: const Text("Localisation"),
+                  onPressed: _selectLocation,
                 ),
-                onTap: _onMapTap,
-                markers: _selectedLocation != null
-                    ? {
-                        Marker(
-                          markerId: const MarkerId("sel"),
-                          position: _selectedLocation!,
-                        )
-                      }
-                    : {},
-              ),
+                const SizedBox(width: 10),
+                _selectedLocation != null
+                    ? Text(
+                        '${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}')
+                    : const Text("Aucune"),
+              ],
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
