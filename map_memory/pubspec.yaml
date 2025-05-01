@@ -21,6 +21,7 @@ dependencies:
   geolocator: ^14.0.0
   geocoding: ^3.0.0
   flutter_native_splash: ^2.4.6
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -50,14 +51,15 @@ flutter:
     - assets/images/logo7.png
     - assets/images/logo8.png
     - assets/images/logo9.png
+    - assets/images/logo10.png
 
 flutter_native_splash:
   color: "#ffffff"
-  image: assets/images/logo8.png
+  image: assets/images/logo10.png
   android: true
   ios: true
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo8.png"
+  image_path: "assets/images/logo10.png"

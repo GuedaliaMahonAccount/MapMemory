@@ -21,10 +21,12 @@ class MapScreen extends StatelessWidget {
     }).toSet();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Map Memories")),
+      appBar: AppBar(title: const Text("Memory Map")),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
-          target: memories.isNotEmpty ? (memories[0].location ?? const LatLng(32.0, 34.8)) : const LatLng(32.0, 34.8),
+          target: memories.isNotEmpty
+              ? (memories[0].location ?? const LatLng(32.0, 34.8))
+              : const LatLng(32.0, 34.8),
           zoom: 10,
         ),
         markers: markers,

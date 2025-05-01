@@ -12,21 +12,21 @@ class EditMemoryScreen extends StatefulWidget {
   const EditMemoryScreen({Key? key, required this.memory}) : super(key: key);
 
   @override
-  _EditMemoryScreenState createState() => _EditMemoryScreenState();
+  State<EditMemoryScreen> createState() => _EditMemoryScreenState();
 }
 
 class _EditMemoryScreenState extends State<EditMemoryScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   File? _imageFile;
-  DateTime _selectedDateTime = DateTime.now();
+  late DateTime _selectedDateTime;
   LatLng? _selectedLocation;
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.memory.title);
-    _descController  = TextEditingController(text: widget.memory.description);
+    _descController = TextEditingController(text: widget.memory.description);
     _selectedDateTime = widget.memory.date;
     if (widget.memory.imagePath.isNotEmpty) {
       _imageFile = File(widget.memory.imagePath);
@@ -53,8 +53,7 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
     );
     if (time != null) {
       setState(() {
-        _selectedDateTime = DateTime(
-          date.year, date.month, date.day, time.hour, time.minute);
+        _selectedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
       });
     }
   }
@@ -63,9 +62,7 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
     final loc = await Navigator.push<LatLng?>(
       context,
       MaterialPageRoute(
-        builder: (_) => MapSelectionScreen(
-          initialLocation: _selectedLocation,
-        ),
+        builder: (_) => MapSelectionScreen(initialLocation: _selectedLocation),
       ),
     );
     if (loc != null) setState(() => _selectedLocation = loc);
@@ -73,29 +70,26 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
 
   Future<void> _submit() async {
     if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Title is required')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Title required')));
       return;
     }
+
     final payload = <String, dynamic>{
       'title': _titleController.text,
       'description': _descController.text,
       'date': _selectedDateTime.toIso8601String(),
-      if (_imageFile != null)  'photos': [_imageFile!.path],
+      if (_imageFile != null) 'photos': [_imageFile!.path],
       if (_selectedLocation != null)
         'location': {
           'lat': _selectedLocation!.latitude,
           'lng': _selectedLocation!.longitude,
         },
     };
-    final success =
-        await ApiService.updateMemory(widget.memory.id, payload);
+
+    final success = await ApiService.updateMemory(widget.memory.id, payload);
     if (success) Navigator.pop(context, true);
     else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update failed')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Update failed')));
     }
   }
 
@@ -104,14 +98,10 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete memory?'),
-        content: const Text('This action cannot be undone.'),
+        content: const Text('This cannot be undone.'),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
-          TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
         ],
       ),
     );
@@ -141,58 +131,37 @@ class _EditMemoryScreenState extends State<EditMemoryScreen> {
             const SizedBox(height: 10),
             TextField(
               controller: _descController,
-              decoration: const InputDecoration(labelText: 'Description'),
               maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Description'),
             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.calendar_today),
-                  label: const Text("Choose Date"),
-                  onPressed: _selectDateTime,
-                ),
-                const SizedBox(width: 10),
-                Text(DateFormat('dd/MM/yyyy HH:mm')
-                    .format(_selectedDateTime)),
-              ],
+            FilledButton.icon(
+              icon: const Icon(Icons.calendar_today),
+              label: Text(DateFormat('dd/MM/yyyy HH:mm').format(_selectedDateTime)),
+              onPressed: _selectDateTime,
             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.image),
-                  label: const Text("Pick Image"),
-                  onPressed: _pickImage,
-                ),
-                const SizedBox(width: 10),
-                _imageFile != null
-                    ? Image.file(_imageFile!, width: 80, height: 80)
-                    : const Text("No image"),
-              ],
+            FilledButton.icon(
+              icon: const Icon(Icons.image),
+              label: const Text("Pick Image"),
+              onPressed: _pickImage,
             ),
+            if (_imageFile != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Image.file(_imageFile!, width: 100, height: 100),
+              ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.map),
-                  label: const Text("Localisation"),
-                  onPressed: _selectLocation,
-                ),
-                const SizedBox(width: 10),
-                _selectedLocation != null
-                    ? Text(
-                        '${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}')
-                    : const Text("Aucune"),
-              ],
+            FilledButton.icon(
+              icon: const Icon(Icons.location_on),
+              label: const Text("Change Location"),
+              onPressed: _selectLocation,
             ),
             const SizedBox(height: 20),
-            ElevatedButton.icon(
+            FilledButton.icon(
               icon: const Icon(Icons.check),
               label: const Text("Save Changes"),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(50)),
               onPressed: _submit,
             ),
           ],

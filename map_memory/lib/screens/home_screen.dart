@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../widgets/memory_card.dart';
 import 'add_memory_screen.dart';
 import 'edit_memory_screen.dart';
+import 'map_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,10 +31,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Map Memory')),
+      appBar: AppBar(
+        title: const Text('💖 My Memories'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MapScreen(memories: _memories),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: _memories.isEmpty
-          ? const Center(child: Text('No memories yet'))
+          ? const Center(child: Text('No memories yet 😢'))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: _memories.length,
@@ -55,10 +73,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       context: context,
                       builder: (_) => AlertDialog(
                         title: const Text('Delete memory?'),
-                        content: const Text('Are you sure you want to delete this memory?'),
+                        content: const Text('Are you sure?'),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                          TextButton(onPressed: () => Navigator.pop(context, true),  child: const Text('Delete')),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Delete'),
+                          ),
                         ],
                       ),
                     );
@@ -70,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final created = await Navigator.push<bool>(
             context,
@@ -78,7 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
           );
           if (created == true) _loadMemories();
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text("New Memory"),
       ),
     );
   }

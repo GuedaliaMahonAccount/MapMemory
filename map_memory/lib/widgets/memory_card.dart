@@ -17,11 +17,14 @@ class MemoryCard extends StatelessWidget {
 
   Widget buildPhoto() {
     if (memory.imagePath.isNotEmpty && File(memory.imagePath).existsSync()) {
-      return Image.file(
-        File(memory.imagePath),
-        width: 60,
-        height: 60,
-        fit: BoxFit.cover,
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.file(
+          File(memory.imagePath),
+          width: 60,
+          height: 60,
+          fit: BoxFit.cover,
+        ),
       );
     }
     return const SizedBox(
@@ -33,15 +36,18 @@ class MemoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
+
     return Card(
-      color: Colors.grey[900],
       margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
       child: ListTile(
         onTap: onTap,
         leading: buildPhoto(),
         title: Text(
           memory.title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           DateFormat('dd MMM yyyy – HH:mm').format(memory.date),

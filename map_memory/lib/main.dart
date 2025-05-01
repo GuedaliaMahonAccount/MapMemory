@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/login_screen.dart';
 
 void main() {
@@ -12,9 +13,14 @@ class MapMemoryApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Map Memory',
-      theme: ThemeData.dark(),
-      home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.pinkAccent,
+        brightness: Brightness.light,
+        textTheme: GoogleFonts.quicksandTextTheme(),
+      ),
+      home: const LoginScreen(),
     );
   }
 }

@@ -10,7 +10,7 @@ class AddMemoryScreen extends StatefulWidget {
   const AddMemoryScreen({Key? key}) : super(key: key);
 
   @override
-  _AddMemoryScreenState createState() => _AddMemoryScreenState();
+  State<AddMemoryScreen> createState() => _AddMemoryScreenState();
 }
 
 class _AddMemoryScreenState extends State<AddMemoryScreen> {
@@ -22,9 +22,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
 
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      setState(() => _imageFile = File(picked.path));
-    }
+    if (picked != null) setState(() => _imageFile = File(picked.path));
   }
 
   Future<void> _selectDateTime() async {
@@ -35,14 +33,14 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       lastDate: DateTime(2100),
     );
     if (date == null) return;
+
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
     if (time != null) {
       setState(() {
-        _selectedDateTime = DateTime(
-          date.year, date.month, date.day, time.hour, time.minute);
+        _selectedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
       });
     }
   }
@@ -51,9 +49,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
     final loc = await Navigator.push<LatLng?>(
       context,
       MaterialPageRoute(
-        builder: (_) => MapSelectionScreen(
-          initialLocation: _selectedLocation,
-        ),
+        builder: (_) => MapSelectionScreen(initialLocation: _selectedLocation),
       ),
     );
     if (loc != null) setState(() => _selectedLocation = loc);
@@ -61,11 +57,10 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
 
   Future<void> _submitMemory() async {
     if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Le titre est requis')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Title is required')));
       return;
     }
+
     final date = _selectedDateTime ?? DateTime.now();
     final memory = <String, dynamic>{
       'title': _titleController.text,
@@ -78,17 +73,18 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
           'lng': _selectedLocation!.longitude,
         },
     };
+
     final success = await ApiService.addMemory(memory);
-    if (success) Navigator.pop(context);
-    else ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Échec lors de la sauvegarde')),
-    );
+    if (success) Navigator.pop(context, true);
+    else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Save failed')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Memory")),
+      appBar: AppBar(title: const Text("Add a New Memory")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -100,62 +96,41 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
             const SizedBox(height: 10),
             TextField(
               controller: _descController,
-              decoration: const InputDecoration(labelText: 'Description'),
               maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Description'),
             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.calendar_today),
-                  label: const Text("Choose Date"),
-                  onPressed: _selectDateTime,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  _selectedDateTime != null
-                      ? DateFormat('dd/MM/yyyy HH:mm').format(_selectedDateTime!)
-                      : 'Default Date',
-                ),
-              ],
+            FilledButton.icon(
+              icon: const Icon(Icons.calendar_today),
+              label: Text(_selectedDateTime == null
+                  ? "Pick Date"
+                  : DateFormat('dd/MM/yyyy HH:mm').format(_selectedDateTime!)),
+              onPressed: _selectDateTime,
             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.image),
-                  label: const Text("Pick Image"),
-                  onPressed: _pickImage,
-                ),
-                const SizedBox(width: 10),
-                _imageFile != null
-                    ? Image.file(_imageFile!, width: 80, height: 80)
-                    : const Text("No Image"),
-              ],
+            FilledButton.icon(
+              icon: const Icon(Icons.image),
+              label: const Text("Pick Image"),
+              onPressed: _pickImage,
             ),
+            if (_imageFile != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Image.file(_imageFile!, width: 100, height: 100),
+              ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.map),
-                  label: const Text("Localisation"),
-                  onPressed: _selectLocation,
-                ),
-                const SizedBox(width: 10),
-                _selectedLocation != null
-                    ? Text(
-                        '${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}')
-                    : const Text("No Location"),
-              ],
+            FilledButton.icon(
+              icon: const Icon(Icons.location_on),
+              label: const Text("Select Location"),
+              onPressed: _selectLocation,
             ),
+            if (_selectedLocation != null)
+              Text("📍 ${_selectedLocation!.latitude}, ${_selectedLocation!.longitude}"),
             const SizedBox(height: 20),
-            ElevatedButton.icon(
+            FilledButton.icon(
               icon: const Icon(Icons.check),
               label: const Text("Save Memory"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                minimumSize: const Size(double.infinity, 50),
-              ),
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(50)),
               onPressed: _submitMemory,
             ),
           ],

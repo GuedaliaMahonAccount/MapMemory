@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import 'enter_code_screen.dart';
 import 'home_screen.dart';
@@ -21,10 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
     bool success = false;
 
     if (isLogin) {
-      // Mode connexion
       success = await ApiService.login(email, password);
     } else {
-      // Mode inscription puis connexion automatique
       success = await ApiService.register(email, password);
       if (success) {
         success = await ApiService.login(email, password);
@@ -32,19 +31,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (success) {
-      if (isLogin) {
-        // Si on était en login, on va direct à la home
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      } else {
-        // Si on venait de s'inscrire, on passe par l'écran de code
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const EnterCodeScreen()),
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => isLogin
+              ? const HomeScreen()
+              : const EnterCodeScreen(),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Authentication failed')),
@@ -52,14 +46,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _toggleMode() {
-    setState(() {
-      isLogin = !isLogin;
-    });
-  }
+  void _toggleMode() => setState(() => isLogin = !isLogin);
 
   void _loginWithGoogle() {
-    // TODO: Integrate real Google Sign-In
+    // TODO: Intégration réelle de Google Sign-In
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -68,48 +58,72 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: theme.background,
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Map Memory',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 30),
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: Text(isLogin ? 'Login' : 'Register'),
-              ),
-              TextButton(
-                onPressed: _toggleMode,
-                child: Text(
-                  isLogin
-                      ? 'No account? Register here'
-                      : 'Already have an account? Login',
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Text(
+                  '💖 Map Memory',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                    color: theme.primary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _loginWithGoogle,
-                icon: const Icon(Icons.account_circle),
-                label: const Text('Continue with Google'),
-              ),
-            ],
+                const SizedBox(height: 30),
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                FilledButton.icon(
+                  onPressed: _submit,
+                  icon: const Icon(Icons.favorite),
+                  label: Text(isLogin ? 'Login' : 'Register'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    textStyle: const TextStyle(fontSize: 16),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _toggleMode,
+                  child: Text(
+                    isLogin
+                        ? 'No account? Register here'
+                        : 'Already have an account? Login',
+                    style: TextStyle(color: theme.secondary),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: _loginWithGoogle,
+                  icon: const Icon(Icons.account_circle),
+                  label: const Text('Continue with Google'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
