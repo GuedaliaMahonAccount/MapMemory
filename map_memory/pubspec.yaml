@@ -68,15 +68,16 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/bag.png
-    - assets/building.png
-    - assets/car.png
-    - assets/heart.png
-    - assets/ice.png
-    - assets/montain.png
-    - assets/mouth.png
-    - assets/music.png
-    - assets/tree.png
+    - assets/images/bag.png
+    - assets/images/building.png
+    - assets/images/car.png
+    - assets/images/heart.png
+    - assets/images/ice.png
+    - assets/images/montain.png
+    - assets/images/mouth.png
+    - assets/images/music.png
+    - assets/images/tree.png
+    - assets/images/logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
