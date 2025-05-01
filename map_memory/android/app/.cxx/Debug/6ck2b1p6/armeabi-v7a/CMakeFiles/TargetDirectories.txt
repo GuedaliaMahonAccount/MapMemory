@@ -1,0 +1,2 @@
+C:/Users/USER/guedaApp/Map Memory/map_memory/android/app/.cxx/Debug/6ck2b1p6/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/USER/guedaApp/Map Memory/map_memory/android/app/.cxx/Debug/6ck2b1p6/armeabi-v7a/CMakeFiles/rebuild_cache.dir
