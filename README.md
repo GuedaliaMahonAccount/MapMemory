@@ -1,6 +1,4 @@
-<div style="text-align: center;">
-  <img src="map_memory/assets/images/logo10.png" alt="Logo" width="300"/>
-</div>
+<img src="map_memory/assets/images/logo10.png" alt="Logo" width="300"/>
 # 📸 Map Memory – Couple Memory App
 
 Map Memory is a full-stack mobile app that lets couples or close friends save their shared memories with GPS location, photos, date & time – and view them on a timeline or an interactive map.
