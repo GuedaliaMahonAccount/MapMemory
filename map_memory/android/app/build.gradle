@@ -5,6 +5,31 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new RuntimeException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+// Load .env file for environment variables
+def envFile = new File("../.env")
+if (!envFile.exists()) {
+    throw new RuntimeException(".env file not found. Please create a .env file with your environment variables.")
+}
+def envProperties = new Properties()
+if (envFile.exists()) {
+    envFile.withReader { reader ->
+        envProperties.load(reader)
+    }
+}
+
 android {
     namespace = "com.example.map_memory"
     compileSdk = flutter.compileSdkVersion
@@ -18,13 +43,19 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
-
+    
     defaultConfig {
         applicationId = "com.example.map_memory"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Set the Google Maps API key from .env file and applicationName
+        manifestPlaceholders = [
+            GOOGLE_MAPS_API_KEY: envProperties.getProperty('GOOGLE_MAPS_API_KEY', ''),
+            applicationName: "io.flutter.app.FlutterApplication"
+        ]
     }
 
     buildTypes {

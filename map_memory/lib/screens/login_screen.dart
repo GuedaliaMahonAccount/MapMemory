@@ -17,29 +17,44 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLogin = true;
 
   Future<void> _submit() async {
-    final email = _emailController.text;
-    final password = _passwordController.text;
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
     bool success = false;
 
-    if (isLogin) {
-      success = await ApiService.login(email, password);
-    } else {
-      success = await ApiService.register(email, password);
-      if (success) {
+    print("📧 Email: $email");
+    print("🔑 Password: $password");
+
+    try {
+      if (isLogin) {
+        print("🟢 Attempting to log in...");
         success = await ApiService.login(email, password);
+        print("🟢 Login success: $success");
+      } else {
+        print("🆕 Attempting to register...");
+        success = await ApiService.register(email, password);
+        print("🆕 Registration success: $success");
+
+        if (success) {
+          print("🟢 Auto-login after registration...");
+          success = await ApiService.login(email, password);
+          print("🟢 Auto-login success: $success");
+        }
       }
+    } catch (e) {
+      print("❌ Error during authentication: $e");
     }
 
     if (success) {
+      print("✅ Authentication successful, navigating to the next screen...");
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => isLogin
-              ? const HomeScreen()
-              : const EnterCodeScreen(),
+          builder: (_) =>
+              isLogin ? const HomeScreen() : const EnterCodeScreen(),
         ),
       );
     } else {
+      print("❌ Authentication failed, showing snackbar...");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Authentication failed')),
       );

@@ -1,10 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 class ApiService {
-  static const String baseUrl =
-      "http://10.0.2.2:5000/api"; // Android Emulator (sinon localhost pour web)
+  static String get baseUrl => dotenv.env['BASE_URL'] ?? 'https://default-url.com';
+  static void logBaseUrl() {
+    print("Base URL: $baseUrl");
+  }
+  
 
   // Get saved token
   static Future<String?> getToken() async {
