@@ -4,9 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl =
-      //"https://353c-81-5-38-88.ngrok-free.app/api"; // ngrok URL
-      //"http://10.0.2.2:5000/api"; // Android Emulator URL
-      "https://mapmemory.onrender.com"; // Render URL
+      "http://10.0.2.2:5000/api"; // Android Emulator (sinon localhost pour web)
 
   // Get saved token
   static Future<String?> getToken() async {
